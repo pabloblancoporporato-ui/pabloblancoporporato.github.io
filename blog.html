@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Pablo Blanco Porporato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#ffffff; --ink:#111111; --ink-light:#999999; --rule:#e0e0e0; }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:'Outfit',sans-serif; font-weight:300; cursor:none; }
+
+  .cursor { position:fixed;width:8px;height:8px;background:var(--ink);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s; }
+  .cursor-ring { position:fixed;width:30px;height:30px;border:1px solid var(--ink);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s;opacity:.4; }
+
+  nav { position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:26px 48px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .4s; }
+  nav.scrolled { border-color:var(--rule); }
+  .nav-logo { font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;letter-spacing:.07em;color:var(--ink);text-decoration:none;line-height:1.2; }
+  .nav-logo span { display:block;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-light);font-family:'Outfit',sans-serif;font-weight:300;margin-top:2px; }
+  .nav-links { display:flex;gap:40px;list-style:none; }
+  .nav-links a { font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-light);text-decoration:none;transition:color .2s;position:relative; }
+  .nav-links a::after { content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--ink);transition:width .3s; }
+  .nav-links a:hover { color:var(--ink); }
+  .nav-links a:hover::after { width:100%; }
+  .nav-links a.active { color:var(--ink); }
+  .nav-links a.active::after { width:100%; }
+
+
+  /* ── LANG SWITCHER ── */
+  .lang-switch { display:flex;align-items:center;gap:6px;margin-left:32px; }
+  .lang-btn { font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-light);background:none;border:none;cursor:pointer;transition:color .2s;font-family:'Outfit',sans-serif;font-weight:300;padding:0; }
+  .lang-btn.active { color:var(--ink);border-bottom:1px solid var(--ink); }
+  .lang-btn:hover { color:var(--ink); }
+  .lang-sep { font-size:10px;color:var(--rule); }
+  /* GRID */
+  .grid-section { padding:100px 48px 72px; }
+  .blog-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:15px; }
+
+  .blog-item { position:relative;aspect-ratio:1/1;overflow:hidden;cursor:none;opacity:0;animation:fadeUp .55s forwards; }
+  .blog-item:nth-child(1){animation-delay:.05s} .blog-item:nth-child(2){animation-delay:.10s}
+  .blog-item:nth-child(3){animation-delay:.15s} .blog-item:nth-child(4){animation-delay:.20s}
+  .blog-item:nth-child(5){animation-delay:.25s} .blog-item:nth-child(6){animation-delay:.30s}
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+  .blog-cover { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .7s cubic-bezier(.25,.46,.45,.94); }
+  .blog-item:hover .blog-cover { transform:scale(1.04); }
+
+  .blog-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.1) 55%,transparent 100%);opacity:0;transition:opacity .35s;display:flex;flex-direction:column;justify-content:flex-end;padding:28px; }
+  .blog-item:hover .blog-overlay { opacity:1; }
+
+  .blog-num-static { position:absolute;top:22px;left:28px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:300;letter-spacing:.25em;color:rgba(255,255,255,.7);text-shadow:0 1px 4px rgba(0,0,0,.4); }
+  .blog-number { font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:300;letter-spacing:.25em;color:rgba(255,255,255,.55);margin-bottom:auto;padding-top:4px; }
+  .blog-title { font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:clamp(17px,1.5vw,22px);line-height:1.25;color:#fff;transform:translateY(5px);transition:transform .35s; }
+  .blog-item:hover .blog-title { transform:translateY(0); }
+  .blog-tag { font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:10px; }
+
+  /* MODAL */
+  .modal-backdrop { display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);backdrop-filter:blur(6px); }
+  .modal-backdrop.open { display:block; }
+
+  .modal { display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:301;width:min(720px,92vw);max-height:85vh;background:#fff;overflow-y:auto;cursor:auto;border-radius:2px; }
+  .modal.open { display:block; }
+
+  .modal-close { position:sticky;top:0;z-index:10;display:flex;justify-content:flex-end;padding:18px 32px;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);cursor:pointer; }
+  .modal-close span { font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--ink-light);transition:color .2s; }
+  .modal-close:hover span { color:var(--ink); }
+
+  .modal-cover { width:100%;aspect-ratio:16/9;object-fit:cover;object-position:center;display:block; }
+  .modal-body { padding:48px 52px 80px; }
+  .modal-tag { font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-light);margin-bottom:20px;display:block; }
+  .modal-title { font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:clamp(26px,3vw,38px);line-height:1.2;letter-spacing:.01em;color:var(--ink);margin-bottom:36px; }
+  .modal-rule { border:none;border-top:1px solid var(--rule);margin-bottom:36px; }
+  .modal-text { font-family:'Outfit',sans-serif;font-weight:300;font-size:15px;line-height:1.8;color:#333; }
+  .modal-text p { margin-bottom:20px; }
+  .modal-text p:last-child { margin-bottom:0; }
+
+  footer { border-top:1px solid var(--rule);padding:36px 48px;display:flex;align-items:center;justify-content:space-between; }
+  footer p { font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light); }
+  .footer-links { display:flex;gap:28px; }
+  .footer-links a { font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light);text-decoration:none;transition:color .2s; }
+  .footer-links a:hover { color:var(--ink); } .nav-links{gap:18px;}
+    .grid-section{padding:90px 16px 56px;}
+    .blog-grid{grid-template-columns:repeat(2,1fr);}
+    .modal{width:92vw;max-height:90vh;}
+    .modal-body{padding:32px 24px 60px;}
+    footer{flex-direction:column;gap:16px;padding:28px 20px;}
+    body{cursor:auto;} .cursor,.cursor-ring{display:none;}
+  } }
+
+  /* ── HAMBURGER ── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 110;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 1px;
+    background: var(--ink);
+    transition: transform .3s, opacity .3s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* ── MOBILE NAV DRAWER ── */
+  .nav-drawer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 105;
+    background: #ffffff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(28px, 8vw, 42px);
+    font-weight: 300;
+    letter-spacing: .04em;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: drawerItem .4s forwards;
+  }
+  .nav-drawer a:nth-child(1){animation-delay:.05s}
+  .nav-drawer a:nth-child(2){animation-delay:.10s}
+  .nav-drawer a:nth-child(3){animation-delay:.15s}
+  .nav-drawer a:nth-child(4){animation-delay:.20s}
+  .nav-drawer a:nth-child(5){animation-delay:.25s}
+  .nav-drawer a:nth-child(6){animation-delay:.30s}
+  .nav-drawer .drawer-lang {
+    display: flex; gap: 16px;
+    opacity: 0;
+    animation: drawerItem .4s .35s forwards;
+  }
+  .nav-drawer .drawer-lang button {
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--ink-light); background: none; border: none;
+    cursor: pointer; font-family: 'Outfit', sans-serif;
+  }
+  .nav-drawer .drawer-lang button.active { color: var(--ink); border-bottom: 1px solid var(--ink); }
+  @keyframes drawerItem {
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  @media(max-width:768px){
+    nav { padding:18px 24px; }
+    .nav-links { display: none; }
+    .lang-switch { display: none; }
+    .hamburger { display: flex; }
+    .nav-logo { font-size: 14px; }
+    .nav-logo span { font-size: 8px; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  @media(max-width:1024px){
+    .blog-grid { grid-template-columns: repeat(2,1fr); gap:12px; }
+    .grid-section { padding:100px 28px 60px; }
+    .modal { width:min(680px,95vw); max-height:90vh; }
+  }
+  @media(max-width:768px){
+    .blog-grid { grid-template-columns: repeat(2,1fr); gap:10px; }
+    .grid-section { padding:90px 16px 48px; }
+    .modal { width:96vw; max-height:92vh; }
+    .modal-body { padding:28px 20px 56px; }
+    footer { flex-direction:column; gap:14px; padding:28px 16px; }
+    .footer-links { flex-wrap:wrap; justify-content:center; gap:16px; }
+  }
+  @media(max-width:430px){
+    .blog-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="nav">
+  <a href="index.html" class="nav-logo">
+    Pablo Blanco Porporato
+    <span data-es="Visualización Arquitectónica" data-en="Architectural Visualization">Visualización Arquitectónica</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" data-es="Proyectos" data-en="Projects">Proyectos</a></li>
+    <li><a href="lado-b.html" data-es="Lado-B" data-en="B-Side">Lado-B</a></li>
+    <li><a href="blog.html" class="active">Blog</a></li>
+    <li><a href="director.html" data-es="Director" data-en="Director">Director</a></li>
+    <li><a href="contacto.html" data-es="Contacto" data-en="Contact">Contacto</a></li>
+  </ul>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <span class="lang-sep">/</span>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="index.html" data-es="Proyectos" data-en="Projects" onclick="closeDrawer()">Proyectos</a>
+  <a href="lado-b.html" data-es="Lado-B" data-en="B-Side" onclick="closeDrawer()">Lado-B</a>
+  <a href="blog.html" onclick="closeDrawer()">Blog</a>
+  <a href="director.html" data-es="Director" data-en="Director" onclick="closeDrawer()">Director</a>
+  <a href="contacto.html" data-es="Contacto" data-en="Contact" onclick="closeDrawer()">Contacto</a>
+  <div class="drawer-lang">
+    <button id="drawer-btn-es" class="active" onclick="setLang('es');closeDrawer()">ES</button>
+    <span style="color:#e0e0e0;font-size:11px">/</span>
+    <button id="drawer-btn-en" onclick="setLang('en');closeDrawer()">EN</button>
+  </div>
+</div>
+
+<section class="grid-section">
+  <div class="blog-grid">
+
+    <div class="blog-item" onclick="openModal(0)">
+      <img class="blog-cover" src="blog_01.jpg" alt="">
+      <span class="blog-num-static">01</span>
+      <div class="blog-overlay">
+        <span class="blog-number">01</span>
+        <h2 class="blog-title">Prácticas correctas de gestión de archivos</h2>
+        <span class="blog-tag">Workflow</span>
+      </div>
+    </div>
+
+    <div class="blog-item" onclick="openModal(1)">
+      <img class="blog-cover" src="blog_02.jpg" alt="">
+      <span class="blog-num-static">02</span>
+      <div class="blog-overlay">
+        <span class="blog-number">02</span>
+        <h2 class="blog-title">Escenarios de luz y sombra para visualización</h2>
+        <span class="blog-tag">Iluminación</span>
+      </div>
+    </div>
+
+    <div class="blog-item" onclick="openModal(2)">
+      <img class="blog-cover" src="blog_03.jpg" alt="">
+      <span class="blog-num-static">03</span>
+      <div class="blog-overlay">
+        <span class="blog-number">03</span>
+        <h2 class="blog-title">Composición lineal sobre composición geométrica</h2>
+        <span class="blog-tag">Composición</span>
+      </div>
+    </div>
+
+    <div class="blog-item" onclick="openModal(3)">
+      <img class="blog-cover" src="blog_04.jpg" alt="">
+      <span class="blog-num-static">04</span>
+      <div class="blog-overlay">
+        <span class="blog-number">04</span>
+        <h2 class="blog-title">Escenarios complejos de luz y sombra</h2>
+        <span class="blog-tag">Iluminación</span>
+      </div>
+    </div>
+
+    <div class="blog-item" onclick="openModal(4)">
+      <img class="blog-cover" src="blog_05.jpg" alt="">
+      <span class="blog-num-static">05</span>
+      <div class="blog-overlay">
+        <span class="blog-number">05</span>
+        <h2 class="blog-title">Sobre el color y por qué no es lo que parece</h2>
+        <span class="blog-tag">Color</span>
+      </div>
+    </div>
+
+    <div class="blog-item" onclick="openModal(5)">
+      <img class="blog-cover" src="blog_06.jpg" alt="">
+      <span class="blog-num-static">06</span>
+      <div class="blog-overlay">
+        <span class="blog-number">06</span>
+        <h2 class="blog-title">Curaduría: narrativa de imágenes en grupo</h2>
+        <span class="blog-tag">Curaduría</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 Pablo Blanco Porporato</p>
+  <div class="footer-links">
+    <a href="https://instagram.com" target="_blank">Instagram</a>
+    <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    <a href="director.html" data-es="Estudio" data-en="Studio">Estudio</a>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="backdrop" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-close" onclick="closeModal()"><span>Cerrar &times;</span></div>
+  <img class="modal-cover" id="modalCover" src="" alt="">
+  <div class="modal-body">
+    <span class="modal-tag" id="modalTag"></span>
+    <h1 class="modal-title" id="modalTitle"></h1>
+    <hr class="modal-rule">
+    <div class="modal-text" id="modalText"></div>
+  </div>
+</div>
+
+<script>
+
+  /* ── DRAWER ── */
+  function toggleDrawer() {
+    var d = document.getElementById('navDrawer');
+    var h = document.getElementById('hamburger');
+    d.classList.toggle('open');
+    h.classList.toggle('open');
+    document.body.style.overflow = d.classList.contains('open') ? 'hidden' : '';
+  }
+  function closeDrawer() {
+    document.getElementById('navDrawer').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+
+  /* ── LANGUAGE SWITCHER ── */
+  function setLang(lang) {
+    document.querySelectorAll('[data-es]').forEach(function(el) {
+      var text = el.getAttribute('data-' + lang);
+      if (text) el.innerHTML = text;
+    });
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    localStorage.setItem('lang', lang);
+  }
+  (function() {
+    var saved = localStorage.getItem('lang');
+    if (saved && saved !== 'es') setLang(saved);
+    if (document.getElementById('drawer-btn-es')) {
+      document.getElementById('drawer-btn-es').classList.toggle('active', !saved || saved==='es');
+      document.getElementById('drawer-btn-en').classList.toggle('active', saved==='en');
+    }
+  })();
+
+const posts = [
+  { tag:"Workflow", title:"Prácticas correctas de gestión de archivos", cover:"blog_01.jpg", body:`<p>Una de las habilidades menos glamorosas pero más determinantes en la producción 3D profesional es la gestión de archivos. No importa cuán bueno sea tu render si no podés encontrar el proyecto de hace seis meses, o si tu cliente no puede abrir el archivo porque las texturas están vinculadas a una ruta absoluta de tu computadora.</p><p>La base es simple: toda la información del proyecto debe vivir dentro de una misma carpeta raíz. Texturas, referencias, archivos de escena, versiones, exports. Nada suelto, nada disperso por el disco.</p><p>Una estructura que funciona bien en la práctica es separar en subcarpetas por tipo: <em>/scene</em>, <em>/textures</em>, <em>/references</em>, <em>/output</em> y <em>/versions</em>. Las versiones deben nombrarse con fecha y número de iteración, nunca con "final", "final2" o "este_si".</p><p>El otro punto crítico es el versionado. Guardar copias incrementales al final de cada sesión cuesta segundos y puede salvar días. Un sistema tan simple como <em>proyecto_v01_20260301</em> es suficiente para mantener el historial legible y recuperable.</p><p>Por último, los archivos de escena deben empaquetarse antes de entregar o archivar. En 3ds Max, Cinema 4D y Blender existen herramientas nativas para esto. No confiar en que las rutas relativas van a funcionar en otra máquina es una regla que conviene internalizar desde el principio.</p>` },
+  { tag:"Iluminación", title:"Escenarios de luz y sombra para visualización", cover:"blog_02.jpg", body:`<p>La luz en visualización arquitectónica no es decoración: es el argumento principal de la imagen. Una escena bien construida pero mal iluminada comunica poco. Una escena modesta con luz inteligente puede ser extraordinaria.</p><p>El punto de partida es entender la diferencia entre luz de ambiente, luz directa y luz de relleno. La luz de ambiente define el tono general; la directa construye la forma y genera las sombras duras; la de relleno suaviza las zonas oscuras y da profundidad sin aplanar.</p><p>En visualización diurna, la clave es la coherencia entre la posición del sol y las sombras proyectadas. Un error frecuente es usar una HDRI de mediodía con una posición de sol de tarde: las sombras se contradicen y la imagen pierde credibilidad.</p><p>Para interiores, la relación entre la luz exterior entrando por ventanas y la iluminación artificial interior es el desafío central. Balancear ambas sin quemar las ventanas ni oscurecer el interior requiere trabajo de exposición y a veces soluciones de postproducción.</p><p>La sombra es tan importante como la luz. Una sombra bien diseñada guía la mirada, separa planos y da escala. Evitar las escenas sin sombras es uno de los saltos cualitativos más inmediatos en el trabajo de visualización.</p>` },
+  { tag:"Composición", title:"Composición lineal sobre composición geométrica", cover:"blog_03.jpg", body:`<p>Cuando hablamos de composición en visualización, solemos recurrir rápidamente a la regla de tercios o a la sección áurea. Son herramientas válidas, pero pertenecen al mundo de la composición geométrica: dividen el cuadro en zonas y ubican elementos en intersecciones predefinidas.</p><p>La composición lineal opera de otra manera. En lugar de pensar en puntos de interés, piensa en recorridos visuales. ¿Por dónde entra la mirada? ¿Hacia dónde la lleva la imagen? ¿Dónde descansa?</p><p>En arquitectura esto es especialmente relevante porque el espacio ya genera líneas: perspectivas que convergen, techos que dirigen, fachadas que se extienden. Fotografiar o renderizar arquitectura es, en gran parte, decidir cuáles de esas líneas van a dominar la composición.</p><p>Una composición lineal fuerte tiene una línea dominante que atraviesa el cuadro y líneas secundarias que la acompañan o contrastan. El error más común es tener demasiadas líneas de igual peso: la imagen se vuelve confusa porque no hay jerarquía.</p><p>La práctica más útil para entrenar este tipo de composición es analizar fotografías de arquitectura que uno admira y trazar las líneas principales. Con el tiempo, ese análisis se vuelve instintivo.</p>` },
+  { tag:"Iluminación", title:"Escenarios complejos de luz y sombra", cover:"blog_04.jpg", body:`<p>Los escenarios de iluminación complejos son aquellos donde múltiples fuentes de luz interactúan simultáneamente: luz natural, luz artificial de varios tipos, luz reflejada y luz transmitida a través de materiales translúcidos.</p><p>El primer paso es siempre jerarquizar. En cualquier escena, por compleja que sea, hay una fuente de luz que domina. Esa fuente define el tono emocional de la imagen y todas las demás deben ser coherentes con ella.</p><p>La temperatura de color es la herramienta más poderosa para crear contraste entre fuentes. La combinación clásica de luz fría exterior con luz cálida interior funciona tan bien porque crea una tensión visual que el ojo lee como verosímil y cinematográfica al mismo tiempo.</p><p>Las sombras en escenarios complejos se vuelven múltiples y superpuestas. Gestionar esa complejidad requiere entender cómo se comportan las sombras blandas versus las duras: las fuentes de luz grandes generan sombras suaves; las puntuales generan sombras duras con bordes definidos.</p><p>El render de escenas con iluminación compleja es computacionalmente costoso. Conocer los parámetros de calidad del motor de render permite optimizar el proceso sin sacrificar el resultado final.</p>` },
+  { tag:"Color", title:"Sobre el color y por qué no es lo que parece", cover:"blog_05.jpg", body:`<p>El color es probablemente el aspecto más engañoso del trabajo visual. Lo que vemos como color es siempre relativo: depende de lo que está al lado, de la luz que lo ilumina, del estado de adaptación de nuestro sistema visual y del contexto cultural en el que lo interpretamos.</p><p>El primer principio que cambia la forma de trabajar con color es entender que no existe el color aislado. Un gris neutro sobre fondo cálido parece frío; el mismo gris sobre fondo frío parece cálido. Esto tiene consecuencias directas en cómo seleccionar materiales y evaluar un render.</p><p>En visualización, la gestión del color empieza en el espacio de color del proyecto. Trabajar en un espacio lineal y exportar con la transformación correcta es la diferencia entre un resultado que se ve bien en todos los dispositivos y uno que se ve bien solo en el monitor donde fue producido.</p><p>El color también tiene peso y temperatura emocional. Los colores cálidos avanzan y los fríos retroceden en el plano visual. Esto es útil para controlar la profundidad percibida de una escena sin necesidad de desenfoque.</p><p>La armonía de color no es una cuestión de gusto sino de estructura. Las relaciones complementarias, análogas y triádicas son herramientas concretas. Saber cuándo usarlas y cuándo romperlas intencionalmente distingue una imagen técnicamente correcta de una que comunica.</p>` },
+  { tag:"Curaduría", title:"Curaduría: narrativa de imágenes en grupo", cover:"blog_06.jpg", body:`<p>Una imagen sola dice lo que dice. Un conjunto de imágenes dice algo más: dice cómo se relacionan entre sí, qué progresión proponen, qué argumento construyen juntas. Ese algo más es lo que la curaduría hace visible.</p><p>En el contexto de un portfolio de visualización, la curaduría es la diferencia entre mostrar trabajos y construir una identidad. La selección y el orden de las imágenes comunica criterio, y el criterio es lo que distingue a un profesional de alguien que simplemente produce archivos.</p><p>El primer principio curatorial es la coherencia. No todas las imágenes tienen que parecerse, pero todas tienen que pertenecer al mismo universo visual. Cuando una imagen rompe ese universo sin razón aparente, genera ruido y debilita al conjunto.</p><p>El segundo principio es el ritmo. Una secuencia de imágenes tiene tempo: imágenes densas y complejas necesitan ser seguidas por imágenes más simples que den respiro.</p><p>El tercer principio es la narrativa. El mejor orden no es necesariamente el cronológico ni el temático: es el que construye un relato. Empezar con impacto, desarrollar con variedad y cerrar con una imagen que deje algo resonando es una estructura que funciona en casi cualquier contexto.</p>` }
+];
+
+function openModal(i) {
+  const p = posts[i];
+  document.getElementById('modalCover').src = p.cover;
+  document.getElementById('modalTag').textContent = p.tag;
+  document.getElementById('modalTitle').textContent = p.title;
+  document.getElementById('modalText').innerHTML = p.body;
+  document.getElementById('modal').scrollTop = 0;
+  document.getElementById('backdrop').classList.add('open');
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('backdrop').classList.remove('open');
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+  var cur  = document.getElementById('cursor');
+  var ring = document.getElementById('cursorRing');
+  if (cur && !('ontouchstart' in window)) {
+    var mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',function(e){
+      mx=e.clientX; my=e.clientY;
+      cur.style.left=mx+'px'; cur.style.top=my+'px';
+    });
+    (function loop(){
+      rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(loop);
+    })();
+  } else if (cur) {
+    cur.style.display='none';
+    ring.style.display='none';
+  }
+document.querySelectorAll('a,.blog-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cur.style.width='14px'; cur.style.height='14px'; ring.style.width='46px'; ring.style.height='46px'; ring.style.opacity='.2'; });
+  el.addEventListener('mouseleave',()=>{ cur.style.width='8px'; cur.style.height='8px'; ring.style.width='30px'; ring.style.height='30px'; ring.style.opacity='.4'; });
+});
+window.addEventListener('scroll',()=>{ document.getElementById('nav').classList.toggle('scrolled', scrollY>40); });
+</script>
+</body>
+</html>

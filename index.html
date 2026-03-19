@@ -210,8 +210,6 @@
   .footer-links a:hover { color:var(--ink); }
 
   /* ── RESPONSIVE ── */
-  @media(max-width:900px){
-    nav { padding:18px 20px; }
     .nav-links { gap:18px; }
     .grid-section { padding:90px 16px 56px; }
     .renders-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
@@ -219,8 +217,6 @@
     body { cursor:auto; }
     .cursor,.cursor-ring { display:none; }
   }
-  @media(max-width:480px){
-    .renders-grid { grid-template-columns:1fr; }
   }
 
   /* ── INTRO ANIMATION ── */
@@ -253,6 +249,99 @@
   @keyframes introOut {
     to { opacity:0; }
   }
+
+  /* ── HAMBURGER ── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 110;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 1px;
+    background: var(--ink);
+    transition: transform .3s, opacity .3s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* ── MOBILE NAV DRAWER ── */
+  .nav-drawer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 105;
+    background: #ffffff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(28px, 8vw, 42px);
+    font-weight: 300;
+    letter-spacing: .04em;
+    color: var(--ink);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: drawerItem .4s forwards;
+  }
+  .nav-drawer a:nth-child(1){animation-delay:.05s}
+  .nav-drawer a:nth-child(2){animation-delay:.10s}
+  .nav-drawer a:nth-child(3){animation-delay:.15s}
+  .nav-drawer a:nth-child(4){animation-delay:.20s}
+  .nav-drawer a:nth-child(5){animation-delay:.25s}
+  .nav-drawer a:nth-child(6){animation-delay:.30s}
+  .nav-drawer .drawer-lang {
+    display: flex; gap: 16px;
+    opacity: 0;
+    animation: drawerItem .4s .35s forwards;
+  }
+  .nav-drawer .drawer-lang button {
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--ink-light); background: none; border: none;
+    cursor: pointer; font-family: 'Outfit', sans-serif;
+  }
+  .nav-drawer .drawer-lang button.active { color: var(--ink); border-bottom: 1px solid var(--ink); }
+  @keyframes drawerItem {
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  @media(max-width:768px){
+    nav { padding:18px 24px; }
+    .nav-links { display: none; }
+    .lang-switch { display: none; }
+    .hamburger { display: flex; }
+    .nav-logo { font-size: 14px; }
+    .nav-logo span { font-size: 8px; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  @media(max-width:1024px){
+    .renders-grid { grid-template-columns: repeat(2,1fr); gap:12px; }
+    .grid-section { padding:100px 28px 60px; }
+  }
+  @media(max-width:768px){
+    .renders-grid { grid-template-columns: repeat(2,1fr); gap:10px; }
+    .grid-section { padding:90px 16px 48px; }
+    footer { flex-direction:column; gap:14px; padding:28px 16px; }
+    .footer-links { flex-wrap:wrap; justify-content:center; gap:16px; }
+  }
+  @media(max-width:430px){
+    .renders-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -282,7 +371,24 @@
     <span class="lang-sep">/</span>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   </div>
+  <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="index.html" data-es="Proyectos" data-en="Projects" onclick="closeDrawer()">Proyectos</a>
+  <a href="lado-b.html" data-es="Lado-B" data-en="B-Side" onclick="closeDrawer()">Lado-B</a>
+  <a href="blog.html" onclick="closeDrawer()">Blog</a>
+  <a href="director.html" data-es="Director" data-en="Director" onclick="closeDrawer()">Director</a>
+  <a href="contacto.html" data-es="Contacto" data-en="Contact" onclick="closeDrawer()">Contacto</a>
+  <div class="drawer-lang">
+    <button id="drawer-btn-es" class="active" onclick="setLang('es');closeDrawer()">ES</button>
+    <span style="color:#e0e0e0;font-size:11px">/</span>
+    <button id="drawer-btn-en" onclick="setLang('en');closeDrawer()">EN</button>
+  </div>
+</div>
 
 <section class="grid-section">
   <div class="renders-grid">
@@ -456,18 +562,23 @@
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLightbox(); });
 
   /* Cursor */
-  const cur  = document.getElementById('cursor');
-  const ring = document.getElementById('cursorRing');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove',e=>{
-    mx=e.clientX; my=e.clientY;
-    cur.style.left=mx+'px'; cur.style.top=my+'px';
-  });
-  (function loop(){
-    rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
-    ring.style.left=rx+'px'; ring.style.top=ry+'px';
-    requestAnimationFrame(loop);
-  })();
+  var cur  = document.getElementById('cursor');
+  var ring = document.getElementById('cursorRing');
+  if (cur && !('ontouchstart' in window)) {
+    var mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',function(e){
+      mx=e.clientX; my=e.clientY;
+      cur.style.left=mx+'px'; cur.style.top=my+'px';
+    });
+    (function loop(){
+      rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(loop);
+    })();
+  } else if (cur) {
+    cur.style.display='none';
+    ring.style.display='none';
+  }
   document.querySelectorAll('a,button,.render-item').forEach(el=>{
     el.addEventListener('mouseenter',()=>{
       cur.style.width='14px'; cur.style.height='14px'; cur.style.background='#111';
@@ -520,7 +631,25 @@
   (function() {
     var saved = localStorage.getItem('lang');
     if (saved && saved !== 'es') setLang(saved);
+    if (document.getElementById('drawer-btn-es')) {
+      document.getElementById('drawer-btn-es').classList.toggle('active', !saved || saved==='es');
+      document.getElementById('drawer-btn-en').classList.toggle('active', saved==='en');
+    }
   })();
+
+  /* ── DRAWER ── */
+  function toggleDrawer() {
+    var d = document.getElementById('navDrawer');
+    var h = document.getElementById('hamburger');
+    d.classList.toggle('open');
+    h.classList.toggle('open');
+    document.body.style.overflow = d.classList.contains('open') ? 'hidden' : '';
+  }
+  function closeDrawer() {
+    document.getElementById('navDrawer').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+    document.body.style.overflow = '';
+  }
   window.addEventListener('scroll',()=>{
     document.getElementById('nav').classList.toggle('scrolled', scrollY>40);
   });
