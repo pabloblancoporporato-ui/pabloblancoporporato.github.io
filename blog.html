@@ -26,6 +26,13 @@
   .nav-links a.active { color:var(--ink); }
   .nav-links a.active::after { width:100%; }
 
+
+  /* ── LANG SWITCHER ── */
+  .lang-switch { display:flex;align-items:center;gap:6px;margin-left:32px; }
+  .lang-btn { font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-light);background:none;border:none;cursor:pointer;transition:color .2s;font-family:'Outfit',sans-serif;font-weight:300;padding:0; }
+  .lang-btn.active { color:var(--ink);border-bottom:1px solid var(--ink); }
+  .lang-btn:hover { color:var(--ink); }
+  .lang-sep { font-size:10px;color:var(--rule); }
   /* GRID */
   .grid-section { padding:100px 48px 72px; }
   .blog-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:15px; }
@@ -94,15 +101,20 @@
 <nav id="nav">
   <a href="index.html" class="nav-logo">
     Pablo Blanco Porporato
-    <span>Visualización Arquitectónica</span>
+    <span data-es="Visualización Arquitectónica" data-en="Architectural Visualization">Visualización Arquitectónica</span>
   </a>
   <ul class="nav-links">
-    <li><a href="index.html">Proyectos</a></li>
-    <li><a href="lado-b.html">Lado-B</a></li>
+    <li><a href="index.html" data-es="Proyectos" data-en="Projects">Proyectos</a></li>
+    <li><a href="lado-b.html" data-es="Lado-B" data-en="B-Side">Lado-B</a></li>
     <li><a href="blog.html" class="active">Blog</a></li>
-    <li><a href="director.html">Director</a></li>
-    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="director.html" data-es="Director" data-en="Director">Director</a></li>
+    <li><a href="contacto.html" data-es="Contacto" data-en="Contact">Contacto</a></li>
   </ul>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <span class="lang-sep">/</span>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
 </nav>
 
 <section class="grid-section">
@@ -176,7 +188,7 @@
   <div class="footer-links">
     <a href="https://instagram.com" target="_blank">Instagram</a>
     <a href="https://linkedin.com" target="_blank">LinkedIn</a>
-    <a href="director.html">Estudio</a>
+    <a href="director.html" data-es="Estudio" data-en="Studio">Estudio</a>
   </div>
 </footer>
 
@@ -193,6 +205,22 @@
 </div>
 
 <script>
+
+  /* ── LANGUAGE SWITCHER ── */
+  function setLang(lang) {
+    document.querySelectorAll('[data-es]').forEach(function(el) {
+      var text = el.getAttribute('data-' + lang);
+      if (text) el.innerHTML = text;
+    });
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    localStorage.setItem('lang', lang);
+  }
+  (function() {
+    var saved = localStorage.getItem('lang');
+    if (saved && saved !== 'es') setLang(saved);
+  })();
+
 const posts = [
   { tag:"Workflow", title:"Prácticas correctas de gestión de archivos", cover:"blog_01.jpg", body:`<p>Una de las habilidades menos glamorosas pero más determinantes en la producción 3D profesional es la gestión de archivos. No importa cuán bueno sea tu render si no podés encontrar el proyecto de hace seis meses, o si tu cliente no puede abrir el archivo porque las texturas están vinculadas a una ruta absoluta de tu computadora.</p><p>La base es simple: toda la información del proyecto debe vivir dentro de una misma carpeta raíz. Texturas, referencias, archivos de escena, versiones, exports. Nada suelto, nada disperso por el disco.</p><p>Una estructura que funciona bien en la práctica es separar en subcarpetas por tipo: <em>/scene</em>, <em>/textures</em>, <em>/references</em>, <em>/output</em> y <em>/versions</em>. Las versiones deben nombrarse con fecha y número de iteración, nunca con "final", "final2" o "este_si".</p><p>El otro punto crítico es el versionado. Guardar copias incrementales al final de cada sesión cuesta segundos y puede salvar días. Un sistema tan simple como <em>proyecto_v01_20260301</em> es suficiente para mantener el historial legible y recuperable.</p><p>Por último, los archivos de escena deben empaquetarse antes de entregar o archivar. En 3ds Max, Cinema 4D y Blender existen herramientas nativas para esto. No confiar en que las rutas relativas van a funcionar en otra máquina es una regla que conviene internalizar desde el principio.</p>` },
   { tag:"Iluminación", title:"Escenarios de luz y sombra para visualización", cover:"blog_02.jpg", body:`<p>La luz en visualización arquitectónica no es decoración: es el argumento principal de la imagen. Una escena bien construida pero mal iluminada comunica poco. Una escena modesta con luz inteligente puede ser extraordinaria.</p><p>El punto de partida es entender la diferencia entre luz de ambiente, luz directa y luz de relleno. La luz de ambiente define el tono general; la directa construye la forma y genera las sombras duras; la de relleno suaviza las zonas oscuras y da profundidad sin aplanar.</p><p>En visualización diurna, la clave es la coherencia entre la posición del sol y las sombras proyectadas. Un error frecuente es usar una HDRI de mediodía con una posición de sol de tarde: las sombras se contradicen y la imagen pierde credibilidad.</p><p>Para interiores, la relación entre la luz exterior entrando por ventanas y la iluminación artificial interior es el desafío central. Balancear ambas sin quemar las ventanas ni oscurecer el interior requiere trabajo de exposición y a veces soluciones de postproducción.</p><p>La sombra es tan importante como la luz. Una sombra bien diseñada guía la mirada, separa planos y da escala. Evitar las escenas sin sombras es uno de los saltos cualitativos más inmediatos en el trabajo de visualización.</p>` },
