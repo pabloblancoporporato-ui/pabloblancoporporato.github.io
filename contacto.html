@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto — Pablo Blanco Porporato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#ffffff; --ink:#111111; --ink-light:#999999; --rule:#e0e0e0; }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body { background:var(--bg); color:var(--ink); font-family:'Outfit',sans-serif; font-weight:300; cursor:none; }
+
+
+  /* ── LANG SWITCHER ── */
+  .lang-switch { display:flex;align-items:center;gap:6px;margin-left:32px; }
+  .lang-btn { font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-light);background:none;border:none;cursor:pointer;transition:color .2s;font-family:'Outfit',sans-serif;font-weight:300;padding:0; }
+  .lang-btn.active { color:var(--ink);border-bottom:1px solid var(--ink); }
+  .lang-btn:hover { color:var(--ink); }
+  .lang-sep { font-size:10px;color:var(--rule); }
+  .cursor { position:fixed;width:8px;height:8px;background:var(--ink);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s; }
+  .cursor-ring { position:fixed;width:30px;height:30px;border:1px solid var(--ink);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s;opacity:.4; }
+
+  nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:26px 48px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .4s; }
+  nav.scrolled { border-color:var(--rule); }
+  .nav-logo { font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;letter-spacing:.07em;color:var(--ink);text-decoration:none;line-height:1.2; }
+  .nav-logo span { display:block;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-light);font-family:'Outfit',sans-serif;font-weight:300;margin-top:2px; }
+  .nav-links { display:flex;gap:40px;list-style:none; }
+  .nav-links a { font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-light);text-decoration:none;transition:color .2s;position:relative; }
+  .nav-links a::after { content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--ink);transition:width .3s; }
+  .nav-links a:hover { color:var(--ink); }
+  .nav-links a:hover::after { width:100%; }
+  .nav-links a.active { color:var(--ink); }
+  .nav-links a.active::after { width:100%; }
+
+  .stage { min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 48px 80px; }
+
+  .bio {
+    max-width: 600px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeIn 1.2s .2s forwards;
+  }
+  .bio a {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(15px, 1.4vw, 20px);
+    line-height: 1.35;
+    letter-spacing: .01em;
+    color: var(--ink);
+    text-decoration: none;
+    transition: opacity .2s;
+  }
+  .bio a:hover { opacity: .5; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  footer { border-top:1px solid var(--rule);padding:36px 48px;display:flex;align-items:center;justify-content:space-between; }
+  footer p { font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light); }
+  .footer-links { display:flex;gap:28px; }
+  .footer-links a { font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-light);text-decoration:none;transition:color .2s; }
+  .footer-links a:hover { color:var(--ink); }
+
+  @media(max-width:768px){
+    nav{padding:18px 20px;} .nav-links{gap:18px;}
+    .stage{padding:100px 28px 60px;}
+    footer{flex-direction:column;gap:16px;padding:28px 20px;}
+    body{cursor:auto;} .cursor,.cursor-ring{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="nav">
+  <a href="index.html" class="nav-logo">
+    Pablo Blanco Porporato
+    <span data-es="Visualización Arquitectónica" data-en="Architectural Visualization">Visualización Arquitectónica</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" data-es="Proyectos" data-en="Projects">Proyectos</a></li>
+    <li><a href="lado-b.html" data-es="Lado-B" data-en="B-Side">Lado-B</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="director.html" data-es="Director" data-en="Director">Director</a></li>
+    <li><a href="contacto.html" class="active" data-es="Contacto" data-en="Contact">Contacto</a></li>
+  </ul>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <span class="lang-sep">/</span>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<main class="stage">
+  <div class="bio">
+    <a href="/cdn-cgi/l/email-protection#770716151b1859151b1619141859071805071805160318371a1e5902191459121302591605"><span class="__cf_email__" data-cfemail="cbbbaaa9a7a4e5a9a7aaa5a8a4e5bba4b9bba4b9aabfa48ba6a2e5bea5a8e5aeafbee5aab9">[email&#160;protected]</span></a>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2026 Pablo Blanco Porporato</p>
+  <div class="footer-links">
+    <a href="https://www.instagram.com/pablo_blanco_porporato/" target="_blank">Instagram</a>
+    <a href="https://www.linkedin.com/in/pablo-blanco-porporato/" target="_blank">LinkedIn</a>
+    <a href="https://www.behance.net/pablogblanco" target="_blank">Behance</a>
+    <a href="https://www.youtube.com/@pablogastonblancoporporato7306" target="_blank">Youtube</a>
+    <a href="contacto.html" data-es="Contacto" data-en="Contact">Contacto</a>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+  /* ── LANGUAGE SWITCHER ── */
+  function setLang(lang) {
+    document.querySelectorAll('[data-es]').forEach(function(el) {
+      var text = el.getAttribute('data-' + lang);
+      if (text) el.innerHTML = text;
+    });
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    localStorage.setItem('lang', lang);
+  }
+  (function() {
+    var saved = localStorage.getItem('lang');
+    if (saved && saved !== 'es') setLang(saved);
+  })();
+
+  const cur  = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+  (function loop(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cur.style.width='14px'; cur.style.height='14px'; ring.style.width='46px'; ring.style.height='46px'; ring.style.opacity='.2'; });
+    el.addEventListener('mouseleave',()=>{ 
